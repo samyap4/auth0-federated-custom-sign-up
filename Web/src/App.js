@@ -8,47 +8,7 @@ import { BellIcon, UserIcon } from '@heroicons/react/outline'
 
 export default function App() {
   const {user, loginWithRedirect} = useAuth0();
-  const [organization, setOrganization] = useState();
   const [email, setEmail] = useState();
-  const [organizations, setOrganizations] = useState();
-  const [profileImage, setProfileImage] = useState();
-
-  useEffect(() => {
-    if (organizations) {
-      if (organizations.length > 1) {
-        setOrganization(organizations[0]);
-      } else {
-        loginWithRedirect({organization: organizations[0].id, login_hint: email});
-      }
-    }
-  }, [organizations]);
-
-  useEffect(() => {
-    if (user) {
-      getOrg(user.org_id);
-      setProfileImage(user.picture)
-    } else {
-      setProfileImage(undefined);
-    }
-  }, [user]);
-
-  const getOrgs = () => {
-    console.log(process.env.REACT_APP_API_BASE_URL);
-    fetch(process.env.REACT_APP_API_BASE_URL + 'user-orgs-by-email?email=' + email)
-    .then(response => response.json())
-    .then(data => data.length > 0 ? setOrganizations(data) : loginWithRedirect({login_hint: email}));
-  }
-
-  const getOrg = () => {
-    fetch(process.env.REACT_APP_API_BASE_URL + 'org-by-id?org_id=' + user.org_id)
-    .then(response => response.json())
-    .then(data => setOrganization(data));
-  }
-
-  const goBack = () => {
-    setOrganization(undefined);
-    setOrganizations(undefined);
-  }
  
   const handleSubmit = (evt) => {
     evt.preventDefault();
@@ -209,80 +169,6 @@ export default function App() {
           </form>
           <br></br>
           <br></br>
-        </>
-      }
-      {organizations && organization &&
-        <>
-          <Listbox value={organization} onChange={setOrganization}>
-            {({ open }) => (
-              <>
-                <Listbox.Label className="block text-sm font-medium text-gray-700">Team:</Listbox.Label>
-                <div className="mt-1 relative">
-                  <Listbox.Button className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    <span className="flex items-center">
-                      <img src={organization.branding.logo_url} alt="" className="flex-shrink-0 h-6 w-6 rounded-full" />
-                      <span className="ml-3 block truncate">{organization.display_name}</span>
-                    </span>
-                    <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                      <SelectorIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                    </span>
-                  </Listbox.Button>
-
-                  <Transition
-                    show={open}
-                    as={Fragment}
-                    leave="transition ease-in duration-100"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <Listbox.Options className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                      {organizations.map((org) => (
-                        <Listbox.Option
-                          key={org.id}
-                          className={({ active }) =>
-                            classNames(
-                              active ? 'text-white bg-indigo-600' : 'text-gray-900',
-                              'cursor-default select-none relative py-2 pl-3 pr-9'
-                            )
-                          }
-                          value={org}
-                        >
-                          {({ selected, active }) => (
-                            <>
-                              <div className="flex items-center">
-                                <img src={org.branding.logo_url} alt="" className="flex-shrink-0 h-6 w-6 rounded-full" />
-                                <span
-                                  className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
-                                >
-                                  {org.display_name}
-                                </span>
-                              </div>
-
-                              {selected ? (
-                                <span
-                                  className={classNames(
-                                    active ? 'text-white' : 'text-indigo-600',
-                                    'absolute inset-y-0 right-0 flex items-center pr-4'
-                                  )}
-                                >
-                                  <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                      ))}
-                    </Listbox.Options>
-                  </Transition>
-                </div>
-              </>
-            )}
-          </Listbox>
-          <br></br>
-          <div>
-            <button class="text-white bg-red-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800" onClick={() => goBack()} style={{display: 'inline-block', marginRight: 10}}>Back</button>
-            <LoginButton organization={organization.id} email={email}/>
-          </div>
         </>
       }
       {user &&
