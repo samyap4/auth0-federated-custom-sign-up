@@ -2,17 +2,39 @@ import React, { useEffect, useState, Fragment } from 'react'
 import LoginButton from './components/LoginButton'
 import LogoutButton from './components/LogoutButton'
 import { useAuth0 } from '@auth0/auth0-react'
-import { Listbox, Transition, Disclosure, Menu } from '@headlessui/react'
-import { CheckIcon, SelectorIcon } from '@heroicons/react/solid'
-import { BellIcon, UserIcon } from '@heroicons/react/outline'
+import { Transition, Disclosure, Menu } from '@headlessui/react'
+import { BellIcon } from '@heroicons/react/outline'
 
 export default function App() {
   const {user, loginWithRedirect} = useAuth0();
-  const [email, setEmail] = useState();
- 
-  const handleSubmit = (evt) => {
+  const [email, setEmail] = useState('tony@upfluent.com');
+  const [phone, setPhone] = useState('+14048675309');
+  const [first, setFirst] = useState('Tony');
+  const [last, setLast] = useState('Fracaro');
+  const [isVerified, setIsVerified] = useState(false);
+  const [inProcess, setInProcess] = useState(false);
+  const [linked, setLinked] = useState(false);
+  
+  const handleVerifySubmit = (evt) => {
     evt.preventDefault();
-    getOrgs();
+    setIsVerified(true);
+    setInProcess(true);
+  } 
+
+  const handleCodeSubmit = (evt) => {
+    evt.preventDefault();
+    setInProcess(false);
+  } 
+
+  const handleLinkSubmit = (evt) => {
+    evt.preventDefault();
+    createUser();
+  }
+
+  const createUser = () => {
+    fetch(process.env.REACT_APP_API_BASE_URL + 'create-user')
+    .then(response => fetch(process.env.REACT_APP_API_BASE_URL + 'link-user')
+    .then(response => setLinked(true)));
   }
 
   const classNames = (...classes) => {
@@ -20,10 +42,7 @@ export default function App() {
   }
 
   const navigation = [
-    { name: 'Dashboard', href: '#', current: true },
-    // { name: 'Team', href: '#', current: false },
-    // { name: 'Projects', href: '#', current: false },
-    // { name: 'Calendar', href: '#', current: false },
+    { name: 'Home', href: '#', current: true },
   ]
   
   return (
@@ -40,11 +59,11 @@ export default function App() {
                     src="https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
                     alt="Workflow"
                   />
-                  <img
+                  {/* <img
                     className="hidden lg:block h-8 w-auto"
                     src={organization && user ? organization.branding.logo_url : "https://i.ibb.co/SwxJtJw/Screen-Shot-2022-04-18-at-12-02-48-PM-removebg-preview.png"}
                     alt="Workflow"
-                  />
+                  /> */}
                 </div>
                 <div className="hidden sm:block sm:ml-6">
                   <div className="flex space-x-4">
@@ -78,12 +97,12 @@ export default function App() {
                   <div>
                     <Menu.Button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white text-gray-400 hover:text-white">
                       <span className="sr-only">Open user menu</span>
-                      {profileImage ? <img
+                      {/* {profileImage ? <img
                         className="h-8 w-8 rounded-full"
                         src={profileImage}
                         alt=""
                       /> :
-                      <UserIcon className="h-6 w-6" aria-hidden="true"/>}
+                      <UserIcon className="h-6 w-6" aria-hidden="true"/>} */}
                       
                     </Menu.Button>
                   </div>
@@ -158,20 +177,70 @@ export default function App() {
     <br></br>
     <br></br>
     <div style={{width:"300px", margin:"0 auto"}}>
-      {!user && !organization &&
+      {!user && 
+        <button 
+          onClick={()=>loginWithRedirect()} 
+          style={{display: 'inline-block'}}
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          Begin Flow
+        </button>
+      } 
+      {user && !isVerified && !inProcess && !linked &&
+      <>
+        <form onSubmit={handleVerifySubmit}>
+          <div class="mb-6">
+            <label for="phone" class="block mb-2 text-sm font-medium text-black-900 dark:text-black-300">Phone:</label>
+            <input type="phone" onChange={e => setPhone(e.target.value)} id="phone" class="bg-white-50 border border-gray-300 text-black-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="+14048675309"/>
+          </div>
+          <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+        </form>
+      </>
+      }
+      {user && isVerified && inProcess && !linked &&
         <>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleCodeSubmit}>
             <div class="mb-6">
-              <label for="email" class="block mb-2 text-sm font-medium text-black-900 dark:text-black-300">Email:</label>
-              <input type="email" onChange={e => setEmail(e.target.value)} id="email" class="bg-white-50 border border-gray-300 text-black-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@team0.com" required/>
+              <label for="number" class="block mb-2 text-sm font-medium text-black-900 dark:text-black-300">Enter Code:</label>
+              <input type="number" id="code" class="bg-white-50 border border-gray-300 text-black-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="123456"/>
             </div>
             <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
           </form>
-          <br></br>
-          <br></br>
         </>
       }
-      {user &&
+      {user && isVerified && !inProcess && !linked &&
+        <>
+          <form onSubmit={handleLinkSubmit}>
+          <div class="mb-6">
+            <label for="email" class="block mb-2 text-sm font-medium text-black-900 dark:text-black-300">Email:</label>
+            <input type="email" onChange={e => setEmail(e.target.value)} id="email" class="bg-white-50 border border-gray-300 text-black-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500" value={email} placeholder="name@upfluent.com" />
+          </div>
+          <br></br>
+          <div class="mb-6">
+            <label for="phone" class="block mb-2 text-sm font-medium text-black-900 dark:text-black-300">Phone:</label>
+            <input type="phone" onChange={e => setPhone(e.target.value)} id="phone" class="bg-white-50 border border-gray-300 text-black-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500" value={phone} placeholder="+14048675309" />
+          </div>
+          <br></br>
+          <div class="mb-6">
+            <label for="first" class="block mb-2 text-sm font-medium text-black-900 dark:text-black-300">First:</label>
+            <input type="first" onChange={e => setFirst(e.target.value)} id="phone" class="bg-white-50 border border-gray-300 text-black-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500" value={first} placeholder="John" />
+          </div>
+        <br></br>
+        <div class="mb-6">
+            <label for="last" class="block mb-2 text-sm font-medium text-black-900 dark:text-black-300">Last:</label>
+            <input type="last" onChange={e => setLast(e.target.value)} id="last" class="bg-white-50 border border-gray-300 text-black-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500" value={last} placeholder="Doe" />
+          </div>
+          <br></br>
+          <div class="mb-6">
+            <label for="password" class="block mb-2 text-sm font-medium text-black-900 dark:text-black-300">Password:</label>
+            <input type="password" id="password" class="bg-white-50 border border-gray-300 text-black-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Password" />
+          </div>
+          <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                  
+          </form>
+        </>
+      }
+      {user && linked &&
         <div style={{margin: 'auto'}}>
           <div class="relative shadow-md sm:rounded-lg">
               <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -184,7 +253,7 @@ export default function App() {
                               Email
                           </th>
                           <th scope="col" class="px-6 py-3">
-                              Team Name
+                              Id
                           </th>
                       </tr>
                   </thead>
@@ -196,8 +265,8 @@ export default function App() {
                           <td class="px-6 py-4 dark:text-white whitespace-nowrap font-medium">
                             {user.email}
                           </td>
-                          <td class="px-12 py-4 dark:text-white whitespace-nowrap font-medium">
-                            {organization ? organization.display_name : ''}
+                          <td class="px-6 py-4 dark:text-white whitespace-nowrap font-medium">
+                            {user.id}
                           </td>
                       </tr>
                   </tbody>
