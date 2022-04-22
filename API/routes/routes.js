@@ -27,11 +27,11 @@ var appRouter = function (app) {
                     Authorization: 'Bearer ' + token
                 },
                 data: {
-                    email: "tony@upfluent.com",
-                    given_name: "Tony",
+                    email: "sam@upfluent.com",
+                    given_name: "Sam",
                     family_name: "Fracaro",
-                    name: "Tony Fracaro",
-                    nickname: "Tony",
+                    name: "Sam Fracaro",
+                    nickname: "Sam",
                     connection: "Username-Password-Authentication",
                     password: "Auth0Dem0",
                     verify_email: false,
@@ -52,6 +52,7 @@ var appRouter = function (app) {
     });
 
     app.get("/link-user", function (req, res) {
+        var primaryUserId = req.query.id;
         var options = {
             method: 'POST',
             url: 'https://samyapkowitz.us.auth0.com/oauth/token',
@@ -71,16 +72,15 @@ var appRouter = function (app) {
                 Authorization: 'Bearer ' + token
             },
         }).then((resp) => {
-            var primaryUserId = undefined;
-            var secondaryUserId = undefined;
-            for (var user of resp.data) {
-                console.log(user);
-                if (user.identities[0].provider === 'auth0') {
-                    primaryUserId = user.user_id;
-                } else if (user.identities[0].provider === 'oidc') {
-                    secondaryUserId = user.user_id;
-                }
-            }
+            var secondaryUserId = resp.data[0].user_id;
+            // for (var user of resp.data) {
+            //     console.log(user);
+            //     if (user.identities[0].provider === 'auth0') {
+            //         primaryUserId = user.user_id;
+            //     } else if (user.identities[0].provider === 'oidc') {
+            //         secondaryUserId = user.user_id;
+            //     }
+            // }
             var linkOptions = {
                 method: 'POST',
                 url: 'https://samyapkowitz.us.auth0.com/api/v2/users/' + primaryUserId + '/identities',

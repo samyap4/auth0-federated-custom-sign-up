@@ -1,5 +1,4 @@
-import React, { useEffect, useState, Fragment } from 'react'
-import LoginButton from './components/LoginButton'
+import React, { useState, Fragment, useEffect } from 'react'
 import LogoutButton from './components/LogoutButton'
 import { useAuth0 } from '@auth0/auth0-react'
 import { Transition, Disclosure, Menu } from '@headlessui/react'
@@ -33,8 +32,9 @@ export default function App() {
 
   const createUser = () => {
     fetch(process.env.REACT_APP_API_BASE_URL + 'create-user')
-    .then(response => fetch(process.env.REACT_APP_API_BASE_URL + 'link-user')
-    .then(response => setLinked(true)));
+    .then(response => response.json())
+    .then(data => fetch(process.env.REACT_APP_API_BASE_URL + 'link-user?id=' + data.user_id)
+    .then(data => loginWithRedirect()));
   }
 
   const classNames = (...classes) => {
@@ -44,6 +44,12 @@ export default function App() {
   const navigation = [
     { name: 'Home', href: '#', current: true },
   ]
+
+  useEffect(() => {
+    if (user?.email === 'sam@upfluent.com') {
+      setLinked(true);
+    }
+  }, [user]);
   
   return (
     <>
@@ -252,9 +258,6 @@ export default function App() {
                           <th scope="col" class="px-6 py-3">
                               Email
                           </th>
-                          <th scope="col" class="px-6 py-3">
-                              Id
-                          </th>
                       </tr>
                   </thead>
                   <tbody>
@@ -264,9 +267,6 @@ export default function App() {
                           </th>
                           <td class="px-6 py-4 dark:text-white whitespace-nowrap font-medium">
                             {user.email}
-                          </td>
-                          <td class="px-6 py-4 dark:text-white whitespace-nowrap font-medium">
-                            {user.id}
                           </td>
                       </tr>
                   </tbody>
