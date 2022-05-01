@@ -46,7 +46,7 @@ export default function App() {
   ]
 
   useEffect(() => {
-    if (user?.email === 'sam@upfluent.com') {
+    if (user?.email === 'sam@amazon.com') {
       setLinked(true);
     }
   }, [user]);

@@ -14,7 +14,7 @@ var appRouter = function (app) {
               client_secret: process.env.CLIENT_SECRET,
               audience: 'https://samyapkowitz.us.auth0.com/api/v2/'
             }
-          };
+        };
         
         axios.request(options).then(function (response) {
             const token = response.data.access_token;
@@ -27,7 +27,7 @@ var appRouter = function (app) {
                     Authorization: 'Bearer ' + token
                 },
                 data: {
-                    email: "sam@upfluent.com",
+                    email: "sam@amazon.com",
                     given_name: "Sam",
                     family_name: "Fracaro",
                     name: "Sam Fracaro",
